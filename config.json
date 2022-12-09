@@ -1,0 +1,8 @@
+{
+  "go-cqhttp": {
+    "api_root": "http://127.0.0.1:5700",
+    "access_token": "",
+    "secret": ""
+  },
+  "command_start": "/"
+}
