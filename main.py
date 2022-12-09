@@ -38,7 +38,7 @@ class qCli():
                 # console.print(new_messages)
                 if event["group_id"] == self.select_seesion:
                     self.ui.add_message(
-                        f'[{event["sender"]["card"] or event["sender"]["nickname"]} ({event["sender"]["user_id"]})]: {event["raw_message"]}')
+                        f'[blue][{event["sender"]["card"] or event["sender"]["nickname"]} ({event["sender"]["user_id"]})]:[/] {event["raw_message"]}')
                 elif event["group_id"] in self.new_messages.keys():
                     self.new_messages[event["group_id"]] += 1
                 else:
@@ -50,6 +50,9 @@ class qCli():
                 if self.group:
                     await self.bot.send_group_msg(
                         message=message, group_id=self.select_seesion)
+                    self.ui.add_message(
+                        f'[blue][{self.self_nick} ({self.self_id})]:[/] {message}')
+
             elif message[:4] == "/set":
                 if message.split(" ")[1] == "group":
                     self.group = True
@@ -73,7 +76,7 @@ class qCli():
         elif self.group:
             await self.bot.send_group_msg(message=message, group_id=self.select_seesion)
             self.ui.add_message(
-                f'[{self.self_nick} ({self.self_id})]: {message}')
+                f'[blue][{self.self_nick} ({self.self_id})]:[/] {message}')
 
     # @bot.on_startup
     async def on_startup(self):
