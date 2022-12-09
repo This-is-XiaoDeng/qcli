@@ -1,10 +1,13 @@
 from aiocqhttp import CQHttp
+import parser
 import asyncio
 from aiocqhttp import Event
 import rich.console
 import app
 import rich.table
 import json
+import traceback
+
 
 
 class qCli():
@@ -29,7 +32,7 @@ class qCli():
         self.bot.on_startup(self.on_startup)
         self.bot.on_message(self.handle_msg)
         self.bot.run(host="127.0.0.1", port=8192)
-
+        #self.bot.get_stranger_info()
     # @bot.on_message
     async def handle_msg(self, event: Event):
         if self.group:
@@ -37,8 +40,8 @@ class qCli():
             if event["message_type"] == "group":
                 # console.print(new_messages)
                 if event["group_id"] == self.select_seesion:
-                    self.ui.add_message(
-                        f'[blue][{event["sender"]["card"] or event["sender"]["nickname"]} ({event["sender"]["user_id"]})]:[/] {event["raw_message"]}')
+                        self.ui.add_message(
+                            f'[blue][{event["sender"]["card"] or event["sender"]["nickname"]} ({event["sender"]["user_id"]})]:[/] {await parser.at(event["raw_message"], self.bot)}')
                 elif event["group_id"] in self.new_messages.keys():
                     self.new_messages[event["group_id"]] += 1
                 else:
@@ -51,7 +54,7 @@ class qCli():
                     await self.bot.send_group_msg(
                         message=message, group_id=self.select_seesion)
                     self.ui.add_message(
-                        f'[blue][{self.self_nick} ({self.self_id})]:[/] {message}')
+                        f'[blue][{self.self_nick} ({self.self_id})]:[/] {await parser.at(message, self.bot)}')
 
             elif message[:4] == "/set":
                 if message.split(" ")[1] == "group":
@@ -76,7 +79,7 @@ class qCli():
         elif self.group:
             await self.bot.send_group_msg(message=message, group_id=self.select_seesion)
             self.ui.add_message(
-                f'[blue][{self.self_nick} ({self.self_id})]:[/] {message}')
+                f'[blue][{self.self_nick} ({self.self_id})]:[/] {await parser.at(message, self.bot)}')
 
     # @bot.on_startup
     async def on_startup(self):
