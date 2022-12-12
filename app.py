@@ -6,7 +6,7 @@ from textual.containers import Container
 class Chat(Static):
     text = "[green]IT Craft QCli Version 1.2\nBy XiaoDeng3386[/]"
 
-    #def (self):
+    # def (self):
     #    text = "QCli Version 1.2\nBy XiaoDeng3386"
     #    self.update(self.text)
 

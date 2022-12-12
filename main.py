@@ -9,7 +9,6 @@ import json
 import traceback
 
 
-
 class qCli():
     config = json.load(open("./config.json"))
     bot = CQHttp(
@@ -32,16 +31,17 @@ class qCli():
         self.bot.on_startup(self.on_startup)
         self.bot.on_message(self.handle_msg)
         self.bot.run(host="127.0.0.1", port=8192)
-        #self.bot.get_stranger_info()
+        # self.bot.get_stranger_info()
     # @bot.on_message
+
     async def handle_msg(self, event: Event):
         if self.group:
             # console.print(event)
             if event["message_type"] == "group":
                 # console.print(new_messages)
                 if event["group_id"] == self.select_seesion:
-                        self.ui.add_message(
-                            f'[blue][{event["sender"]["card"] or event["sender"]["nickname"]} ({event["sender"]["user_id"]})]:[/] {await parser.at(event["raw_message"], self.bot)}')
+                    self.ui.add_message(
+                        f'[blue][{event["sender"]["card"] or event["sender"]["nickname"]} ({event["sender"]["user_id"]})]:[/] {await parser.at(event["raw_message"], self.bot)}')
                 elif event["group_id"] in self.new_messages.keys():
                     self.new_messages[event["group_id"]] += 1
                 else:
@@ -52,7 +52,7 @@ class qCli():
             if message[:4] == "/msg":
                 if self.group:
                     await self.bot.send_group_msg(
-                        message=message, group_id=self.select_seesion)
+                        message=message[5:], group_id=self.select_seesion)
                     self.ui.add_message(
                         f'[blue][{self.self_nick} ({self.self_id})]:[/] {await parser.at(message, self.bot)}')
 
