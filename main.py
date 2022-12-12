@@ -74,7 +74,7 @@ class qCli():
                             self.new_messages[g["group_id"]] = 0
                         table.add_row(str(g["group_id"]), g["group_name"], str(
                             self.new_messages[g["group_id"]]))
-                    self.ui.add_message(table)
+                    self.ui.update_status(table)
 
         elif self.group:
             await self.bot.send_group_msg(message=message, group_id=self.select_seesion)

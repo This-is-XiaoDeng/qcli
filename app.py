@@ -1,6 +1,7 @@
 from textual.app import App, ComposeResult
 from textual.widgets import Header, Footer, Input, Static
 from textual.containers import Container
+import sys
 
 
 class Chat(Static):
@@ -10,7 +11,11 @@ class Chat(Static):
     #    text = "QCli Version 1.2\nBy XiaoDeng3386"
     #    self.update(self.text)
 
-    def edit(self, value, a=True):
+    def clean(self):
+        self.text = "[green]IT Craft QCli Version 1.2\nBy XiaoDeng3386[/]"
+        self.update(self.text)
+
+    def edit(self, value):
         self.text += f"\n{value}"
         self.update(self.text)
         self.scroll_end()
@@ -32,20 +37,29 @@ class Input(Static):
 
 class QCli(App):
     BINDINGS = [("d", "toggle_dark", "Toggle dark mode"),
-                ("escape", "reset_focus", "Exit Input")]
+                ("escape", "reset_focus", "Reset Input"),
+                ("ctrl+q", "quit_app", "Quit")]
     CSS_PATH = "vertical_layout.css"
+
+    async def action_quit_app(self) -> None:
+        # await self.action_quit()
+        sys.exit()
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
-        yield Header()
+        yield Header(show_clock=True)
         yield Footer()
         self.chat = Chat()
         yield Container(self.chat, classes="box")
-        yield Static("Seesions", classes="box")
+        self.status = Static("Status", classes="box")
+        yield self.status
         # self.input = Input()
         # yield Container(self.input, classes="box", id="two")#Static("Input", classes="box", id="two")
         self.input = Input(classes="box", id="two")
         yield self.input
+
+    def update_status(self, text) -> None:
+        self.status.update(text)
 
     def action_toggle_dark(self) -> None:
         """An action to toggle dark mode."""
