@@ -6,7 +6,6 @@ import rich.console
 import app
 import rich.table
 import json
-import traceback
 
 
 class qCli():
@@ -48,7 +47,9 @@ class qCli():
                     self.new_messages[event["group_id"]] = 1
 
     async def send_message(self, message):
-        if message[0] == "/":
+        if len(message) == 0:
+            return None
+        elif message[0] == "/":
             if message[:4] == "/msg":
                 if self.group:
                     await self.bot.send_group_msg(
@@ -61,6 +62,9 @@ class qCli():
                     self.group = True
                     self.select_seesion = int(message.split(" ")[2])
                     self.console.rule(f"Group: {self.select_seesion}")
+                    history_message = await self.bot.call_action("get_group_msg_history", group_id=self.select_seesion)
+                    for msg in history_message["messages"]:
+                        await self.handle_msg(msg)
             elif message[:4] == "/get":
                 if message.split(" ")[1] == "groups":
                     table = rich.table.Table()
