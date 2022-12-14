@@ -5,20 +5,33 @@ import sys
 
 
 class Chat(Static):
-    text = "[green]IT Craft QCli Version 1.2\nBy XiaoDeng3386[/]"
+    text = {"start": "[green]IT Craft QCli Version 1.2\nBy XiaoDeng3386[/]"}
+    selected_screen = "start"
 
     # def (self):
     #    text = "QCli Version 1.2\nBy XiaoDeng3386"
     #    self.update(self.text)
 
     def clean(self):
-        self.text = "[green]IT Craft QCli Version 1.2\nBy XiaoDeng3386[/]"
-        self.update(self.text)
+        self.text[self.selected_screen] = "[green]IT Craft QCli Version 1.2[/]"
+        self.update(self.text[self.selected_screen])
 
     def edit(self, value):
-        self.text += f"\n{value}"
-        self.update(self.text)
+        self.text[self.selected_screen] += f"\n{value}"
+        self.update(self.text[self.selected_screen])
         self.scroll_end()
+
+    def init(self):
+        self.edit("")
+
+    def set_screen(self, screen):
+        if screen in self.text.keys():
+            self.selected_screen = screen
+            self.update(self.text[self.selected_screen])
+        else:
+            self.text[self.selected_screen] = ""
+            self.selected_screen = screen
+            self.clean()
 
 
 """
@@ -40,6 +53,7 @@ class QCli(App):
                 ("escape", "reset_focus", "Reset Input"),
                 ("ctrl+q", "quit_app", "Quit")]
     CSS_PATH = "vertical_layout.css"
+    TITLE = "IT CRAFT QCLI Version 1.2"
 
     async def action_quit_app(self) -> None:
         # await self.action_quit()
@@ -50,16 +64,26 @@ class QCli(App):
         yield Header(show_clock=True)
         yield Footer()
         self.chat = Chat()
-        yield Container(self.chat, classes="box")
-        self.status = Static("Status", classes="box")
+        self.group_list = Static()
+        yield Container(self.chat, self.group_list, classes="box")
+        self.chat.init()
+        self.status = Container(
+            Static("User: XDbot (3457603681)"),
+            Static("Status"),
+            classes="box"
+        )
         yield self.status
         # self.input = Input()
         # yield Container(self.input, classes="box", id="two")#Static("Input", classes="box", id="two")
         self.input = Input(classes="box", id="two")
         yield self.input
 
-    def update_status(self, text) -> None:
-        self.status.update(text)
+    def set_group(self, group):
+        self.group_list.set_styles("display: none;")
+        self.chat.set_screen(f"g{group}")
+
+    def set_groups_list(self, groups) -> None:
+        self.group_list.update(groups)
 
     def action_toggle_dark(self) -> None:
         """An action to toggle dark mode."""
@@ -78,6 +102,7 @@ class QCli(App):
 
     def set_send_func(self, func) -> None:
         self.send_func = func
+        #self.send_func("/get groups")
 
     # def on_key(self, event: events.Key):
     #    self.input.insert(event.char)

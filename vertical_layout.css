@@ -1,20 +1,21 @@
 Screen {
-    layout: grid;
+  layout: grid;
   grid-size: 2 2;
   grid-columns: 3fr 1fr;
-  grid-rows: 85% 15%;  
+  grid-rows: 85% 15%;
 }
 
 #two {
-    column-span: 2;
-/*    row-span: 2;*/
-/*    tint: magenta 40%;*/
+  column-span: 2;
+  /*    row-span: 2;*/
+  /*    tint: magenta 40%;*/
 }
 
-  .box {
-      height: 100%;
-        border: solid green;
-      }
+.box {
+  height: 100%;
+  border: solid green;
+}
+
 /*
 #sidebar {
     dock: bottom;
