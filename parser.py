@@ -32,8 +32,12 @@ async def reply(message, bot):
         return message
     else:
         id = get_center(message, "[CQ:reply,id=", "]")
-        reply_message = await bot.get_msg(message_id=int(id))
-    return await reply(message.replace(f"[CQ:reply,id={id}]", f"[green][Re: {reply_message['sender']['nickname']}: {reply_message['message']}][/]\n"), bot)
+        try:
+            reply_message = await bot.get_msg(message_id=int(id))
+        except Exception:
+            return message
+        else:
+            return await reply(message.replace(f"[CQ:reply,id={id}]", f"[green][Re: {reply_message['sender']['nickname']}: {reply_message['message']}][/]\n"), bot)
 
 
 async def parser(message, bot):
@@ -42,4 +46,4 @@ async def parser(message, bot):
     msg = await reply(msg, bot)
     msg = await at(msg, bot)
     msg = await image(msg)
-    return msg
+    return msg.replace("\n", "\n ")

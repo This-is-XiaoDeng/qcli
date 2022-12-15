@@ -6,6 +6,9 @@ import rich.console
 import app
 import rich.table
 import json
+import threading
+#import os
+import subprocess
 
 
 class qCli():
@@ -22,9 +25,27 @@ class qCli():
     new_messages = {}
     self_nick = None
     self_id = None
+    gocq = None
+
+    def display_gocq_log(self):
+        while True:
+            buffer = self.gocq.stdout.readline().decode()
+            if buffer != "" and self.gocq.poll() != None:
+                break
+            buffer = buffer[buffer.find(" [")+1:].replace("\n", "")
+            if self.self_nick != None:
+                self.ui.gocqlog.update(buffer)
+            else:
+                self.console.print(buffer)
 
     def __init__(self):
-        pass
+        #self.gocq = os.popen("cd ./go-cqhttp/;./go-cqhttp")
+        self.gocq = subprocess.Popen("cd ./go-cqhttp/;./go-cqhttp",
+                                     shell=True,
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.STDOUT)
+        self.gocq_thread = threading.Thread(target=self.display_gocq_log)
+        self.gocq_thread.start()
 
     def start(self):
         self.bot.on_websocket_connection(self.on_startup)

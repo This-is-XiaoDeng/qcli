@@ -16,6 +16,11 @@ Screen {
   border: solid green;
 }
 
+.box2 {
+  height: auto;
+  border: solid green;
+}
+
 /*
 #sidebar {
     dock: bottom;

@@ -67,9 +67,10 @@ class QCli(App):
         self.group_list = Static()
         yield Container(self.chat, self.group_list, classes="box")
         self.chat.init()
+        self.gocqlog = Static(classes="box2")
         self.status = Container(
             Static("User: XDbot (3457603681)"),
-            Static("Status"),
+            self.gocqlog,
             classes="box"
         )
         yield self.status
