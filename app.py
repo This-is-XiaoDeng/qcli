@@ -49,9 +49,9 @@ class Input(Static):
 
 
 class QCli(App):
-    BINDINGS = [("d", "toggle_dark", "Toggle dark mode"),
-                ("escape", "reset_focus", "Reset Input"),
-                ("ctrl+q", "quit_app", "Quit")]
+    BINDINGS = [  # ("d", "toggle_dark", "Toggle dark mode"),
+        # ("escape", "reset_focus", "Reset Input"),
+        ("ctrl+q", "quit_app", "Quit")]
     CSS_PATH = "vertical_layout.css"
     TITLE = "IT CRAFT QCLI Version 1.2"
 
@@ -65,11 +65,14 @@ class QCli(App):
         yield Footer()
         self.chat = Chat()
         self.group_list = Static()
+        self.group_list_1 = Static()  # classes="box2")
         yield Container(self.chat, self.group_list, classes="box")
         self.chat.init()
         self.gocqlog = Static(classes="box2")
+        self.user = Static("User: <none> (<none>)")
         self.status = Container(
-            Static("User: XDbot (3457603681)"),
+            self.user,
+            self.group_list_1,
             self.gocqlog,
             classes="box"
         )
@@ -83,8 +86,9 @@ class QCli(App):
         self.group_list.set_styles("display: none;")
         self.chat.set_screen(f"g{group}")
 
-    def set_groups_list(self, groups) -> None:
+    def update_groups_list(self, groups) -> None:
         self.group_list.update(groups)
+        self.group_list_1.update(groups)
 
     def action_toggle_dark(self) -> None:
         """An action to toggle dark mode."""

@@ -7,7 +7,6 @@ import app
 import rich.table
 import json
 import threading
-#import os
 import subprocess
 
 
@@ -18,19 +17,19 @@ class qCli():
         access_token=config["go-cqhttp"]["access_token"],
         secret=config["go-cqhttp"]["secret"]
     )
-    select_seesion = None
-    group = True
+    selected_session = None
+    group_mode = True
     ui = app.QCli()
     console = rich.console.Console()
     new_messages = {}
     self_nick = None
     self_id = None
-    gocq = None
+    cqhttp_popen = None
 
-    def display_gocq_log(self):
+    def display_cqhttp_logger(self):
         while True:
-            buffer = self.gocq.stdout.readline().decode()
-            if buffer != "" and self.gocq.poll() != None:
+            buffer = self.cqhttp_popen.stdout.readline().decode()
+            if buffer != "" and self.cqhttp_popen.poll() != None:
                 break
             buffer = buffer[buffer.find(" [")+1:].replace("\n", "")
             if self.self_nick != None:
@@ -40,26 +39,27 @@ class qCli():
 
     def __init__(self):
         #self.gocq = os.popen("cd ./go-cqhttp/;./go-cqhttp")
-        self.gocq = subprocess.Popen("cd ./go-cqhttp/;./go-cqhttp",
-                                     shell=True,
-                                     stdout=subprocess.PIPE,
-                                     stderr=subprocess.STDOUT)
-        self.gocq_thread = threading.Thread(target=self.display_gocq_log)
+        self.cqhttp_popen = subprocess.Popen("cd ./go-cqhttp/;./go-cqhttp -faststart",
+                                             shell=True,
+                                             stdout=subprocess.PIPE,
+                                             stderr=subprocess.STDOUT)
+        self.gocq_thread = threading.Thread(target=self.display_cqhttp_logger)
         self.gocq_thread.start()
 
     def start(self):
-        self.bot.on_websocket_connection(self.on_startup)
-        self.bot.on_message(self.handle_msg)
+        self.bot.on_websocket_connection(self.on_websocket_connection)
+        self.bot.on_message(self.handle_message)
         self.bot.run(host="127.0.0.1", port=8192)
         # self.bot.get_stranger_info()
     # @bot.on_message
 
-    async def handle_msg(self, event: Event):
-        if self.group:
+    async def handle_message(self, event: Event):
+        if self.group_mode:
             # console.print(event)
             if event["message_type"] == "group":
                 # console.print(new_messages)
-                if event["group_id"] == self.select_seesion:
+                if event["group_id"] == self.selected_session:
+                    self.new_messages[event["group_id"]] = 0
                     self.ui.add_message(
                         f'[blue][{event["sender"]["card"] or event["sender"]["nickname"]} ({event["sender"]["user_id"]})]:[/]\n {await parser.parser(event["raw_message"], self.bot)}')
                 elif event["group_id"] in self.new_messages.keys():
@@ -72,21 +72,25 @@ class qCli():
             return None
         elif message[0] == "/":
             if message[:4] == "/msg":
-                if self.group:
+                if self.group_mode:
                     await self.bot.send_group_msg(
-                        message=message[5:], group_id=self.select_seesion)
+                        message=message[5:],
+                        group_id=self.selected_session
+                    )
                     self.ui.add_message(
-                        f'[blue][{self.self_nick} ({self.self_id})]:[/]\n {await parser.parser(message, self.bot)}')
+                        f'[blue][{self.self_nick} ({self.self_id})]:[/]\n {await parser.parser(message[5:], self.bot)}'
+                    )
 
             elif message[:4] == "/set":
                 if message.split(" ")[1] == "group":
-                    self.group = True
-                    self.select_seesion = int(message.split(" ")[2])
-                    #self.console.rule(f"Group: {self.select_seesion}")
-                    self.ui.set_group(self.select_seesion)
-                    history_message = await self.bot.call_action("get_group_msg_history", group_id=self.select_seesion)
+                    self.group_mode = True
+                    self.selected_session = int(message.split(" ")[2])
+                    #self.console.rule(f"Group: {self.select_session}")
+                    self.ui.set_group(self.selected_session)
+                    history_message = await self.bot.call_action("get_group_msg_history", group_id=self.selected_session)
                     for msg in history_message["messages"]:
-                        await self.handle_msg(msg)
+                        await self.handle_message(msg)
+
             elif message[:4] == "/get":
                 if message.split(" ")[1] == "groups":
                     table = rich.table.Table()
@@ -100,26 +104,58 @@ class qCli():
                             self.new_messages[g["group_id"]] = 0
                         table.add_row(str(g["group_id"]), g["group_name"], str(
                             self.new_messages[g["group_id"]]))
-                    self.ui.set_groups_list(table)
+                    self.ui.update_groups_list(table)
 
-        elif self.group:
-            await self.bot.send_group_msg(message=message, group_id=self.select_seesion)
+        elif self.group_mode:
+            await self.bot.send_group_msg(message=message, group_id=self.selected_session)
             self.ui.add_message(
                 f'[blue][{self.self_nick} ({self.self_id})]:[/]\n {await parser.parser(message, self.bot)}')
     # @bot.on_startup
 
-    async def on_startup(self, event):
+    async def update_group_list(self):
+        while True:
+            if self.group_mode:
+                await self.send_message("/get groups")
+            await asyncio.sleep(1)
+
+    async def update_status(self):
+        while True:
+            # Mode
+            if self.group_mode:
+                mode = "Group"
+            else:
+                mode = "Private"
+            # session
+            if not self.selected_session:
+                session_name = "None"
+            elif self.group_mode:
+                session_name = (await self.bot.get_group_info(group_id=self.selected_session))["group_name"]
+            else:
+                session_name = (await self.bot.get_stranger_info(user_id=self.selected_session))["nickname"]
+
+            # 整合文字
+            text = f"""User: {self.self_nick} ({self.self_id})
+Mode: {mode}
+Session: {session_name} ({self.selected_session})"""
+            # 渲染
+            self.ui.user.update(text)
+            # 等待
+            await asyncio.sleep(1)
+
+    async def on_websocket_connection(self, event):
         self.console.rule("QCLI (By XiaoDeng3386)")
         self.self_nick = (await self.bot.get_login_info())["nickname"]
         self.self_id = (await self.bot.get_login_info())["user_id"]
         self.ui.set_send_func(self.send_message)
         asyncio.create_task(self.ui.run_async())
-        await self.send_message("/get groups")
+        asyncio.create_task(self.update_group_list())
+        asyncio.create_task(self.update_status())
+        # await self.send_message("/get groups")
         #    await asyncio.sleep(5)
         #    groups = await bot.get_group_list()
         #    console.print(groups)
         #    group = True
-        #    select_seesion = console.input("Group: ")
+        #    select_session = console.input("Group: ")
 
 
 app_class = qCli()
