@@ -1,3 +1,13 @@
+import random
+
+send_func = None
+
+
+def set_send_func(func):
+    global send_func
+    send_func = func
+
+
 def get_center(text, start, end, start_search=0):
     start_len = text.find(start, start_search)
     if start_len == -1:
@@ -15,7 +25,10 @@ async def image(message):
         return message
     else:
         data = get_center(message, "[CQ:image", "]")
-        return await image(message.replace(f"[CQ:image{data}]", "[yellow][Image][/]"))
+        url = data[data.find("url=") + 4:]
+        img_id = random.randint(0, 999)
+        send_func(f"/set i{img_id} {url}")
+        return await image(message.replace(f"[CQ:image{data}]", f"[yellow][Image:i{img_id}][/]"))
 
 
 async def at(message, bot):
