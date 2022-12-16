@@ -1,3 +1,4 @@
+import rich.markdown
 from aiocqhttp import CQHttp
 import parser
 import asyncio
@@ -38,6 +39,19 @@ class qCli():
                 self.console.print(buffer)
 
     def __init__(self):
+        with open("config.yml") as f:
+            cqhttp_config = f.read()
+        cqhttp_config = cqhttp_config.replace("{{uin}}", self.config["user"]["uin"])\
+            .replace("{{password}}", self.config["user"]["uin"])\
+            .replace("{{ws-port}}", self.config["port"])\
+            .replace("{{http-addr}}", self.config["go-cqhttp"]["api_root"].replace("http://", ""))\
+            .replace("{{access-token}}", self.config["go-cqhttp"]["access_token"])
+        with open("./go-cqhttp/config.yml", "w") as f:
+            self.console.rule("config.yml")
+            self.console.print(rich.markdown.Markdown(
+                f"```yaml\n{cqhttp_config}\n```"))
+            self.console.rule("(END)")
+            f.write(cqhttp_config)
         #self.gocq = os.popen("cd ./go-cqhttp/;./go-cqhttp")
         self.cqhttp_popen = subprocess.Popen("cd ./go-cqhttp/;./go-cqhttp -faststart",
                                              shell=True,

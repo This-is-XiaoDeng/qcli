@@ -50,10 +50,14 @@ class Input(Static):
 
 class QCli(App):
     BINDINGS = [  # ("d", "toggle_dark", "Toggle dark mode"),
-        # ("escape", "reset_focus", "Reset Input"),
-        ("ctrl+q", "quit_app", "Quit")]
+        ("escape", "reset_focus", "Reset Focus"),
+        ("ctrl+q", "quit_app", "Quit"),
+        ("up", "scroll_up", "Up")]
     CSS_PATH = "vertical_layout.css"
     TITLE = "IT CRAFT QCLI Version 1.2"
+
+    async def action_scroll_up(self) -> None:
+        self.chat.scroll_to(0)
 
     async def action_quit_app(self) -> None:
         # await self.action_quit()
