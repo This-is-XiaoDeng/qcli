@@ -1,3 +1,4 @@
+import os
 import rich.markdown
 from aiocqhttp import CQHttp
 import parser
@@ -10,6 +11,7 @@ import json
 import threading
 import subprocess
 import traceback
+import re
 
 
 class qCli():
@@ -65,6 +67,12 @@ class qCli():
             stderr=subprocess.STDOUT)
         self.gocq_thread = threading.Thread(target=self.display_cqhttp_logger)
         self.gocq_thread.start()
+        # 清理别名列表
+        alias = []
+        for a in self.aliases["data"]:
+            if re.fullmatch(self.aliases["ignore"], a[0]) is None:
+                alias += [a]
+        self.aliases["data"] = alias
 
     def start(self):
         self.bot.on_websocket_connection(self.on_websocket_connection)
@@ -81,7 +89,7 @@ class qCli():
                 if event["group_id"] == self.selected_session:
                     self.new_messages[event["group_id"]] = 0
                     self.ui.add_message(
-                        f'[blue][{event["sender"]["card"] or event["sender"]["nickname"]} ({event["sender"]["user_id"]})]:[/]\n {await parser.parser(event["raw_message"], self.bot)}')
+                        f'[blue]\[{event["sender"]["card"] or event["sender"]["nickname"]} ({event["sender"]["user_id"]})]:[/]\n {await parser.parser(event["raw_message"], self.bot)}')
                 elif event["group_id"] in self.new_messages.keys():
                     self.new_messages[event["group_id"]] += 1
                 else:
@@ -119,7 +127,7 @@ class qCli():
                         group_id=self.selected_session
                     )
                     self.ui.add_message(
-                        f'[blue][{self.self_nick} ({self.self_id})]:[/]\n {await parser.parser(message.replace("/msg", "").strip(), self.bot)}'
+                        '[blue]\[{self.self_nick} ({self.self_id})]:[/]\n {await parser.parser(message.replace("/msg", "").strip(), self.bot)}'
                     )
 
             elif command[0] == "/set":
@@ -154,6 +162,12 @@ class qCli():
                         table.add_row(str(g["group_id"]), g["group_name"], str(
                             self.new_messages[g["group_id"]]))
                     self.ui.update_groups_list(table)
+                if command[1] == "image":
+                    url = command[2]
+                    if os.name == "posix":
+                        self.open_image = os.popen(f'xdg-open "{url}"')
+                    else:
+                        self.open_image = os.popen(f'start "{url}"')
 
         elif self.group_mode:
             await self.bot.send_group_msg(
@@ -161,7 +175,7 @@ class qCli():
                 group_id=self.selected_session
             )
             self.ui.add_message(
-                f'[blue][{self.self_nick} ({self.self_id})]:[/]\n {await parser.parser(message, self.bot)}')
+                f'[blue]\[{self.self_nick} ({self.self_id})]:[/]\n {await parser.parser(message, self.bot)}')
     # @bot.on_startup
 
     async def update_group_list(self):

@@ -27,7 +27,7 @@ async def image(message):
         data = get_center(message, "[CQ:image", "]")
         url = data[data.find("url=") + 4:]
         img_id = random.randint(0, 999)
-        send_func(f"/set i{img_id} {url}")
+        await send_func(f"/set i{img_id} {url}")
         return await image(message.replace(f"[CQ:image{data}]", f"[yellow][Image:i{img_id}][/]"))
 
 
