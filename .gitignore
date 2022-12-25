@@ -1,3 +1,6 @@
 __pycache__
-go-cqhttp
 *.pyc
+go-cqhttp/config.yml
+go-cqhttp/data
+go-cqhttp/logs
+go-cqhttp/session.token

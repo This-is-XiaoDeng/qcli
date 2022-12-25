@@ -1,0 +1,32 @@
+Screen {
+  layout: grid;
+  grid-size: 2 2;
+  grid-columns: 3fr 1fr;
+  grid-rows: 85% 15%;
+}
+
+#two {
+  column-span: 2;
+  /*    row-span: 2;*/
+  /*    tint: magenta 40%;*/
+}
+
+.box {
+  height: 100%;
+  border: solid green;
+}
+
+.box2 {
+  height: auto;
+  border: solid green;
+}
+
+/*
+#sidebar {
+    dock: bottom;
+    width: 15;
+    height: 100%;
+    color: #0f2b41;
+    background: dodgerblue;
+}
+*/

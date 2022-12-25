@@ -50,40 +50,33 @@ class Input(Static):
 
 class QCli(App):
     BINDINGS = [  # ("d", "toggle_dark", "Toggle dark mode"),
-        ("escape", "reset_focus", "Reset Focus"),
-        ("ctrl+q", "quit_app", "Quit"),
-        ("up", "scroll_up", "Up")]
-    CSS_PATH = "vertical_layout.css"
+        ("escape", "reset_focus", "Reset Input"),
+        ("ctrl+q", "quit_app", "Quit")]
+    CSS_PATH = "stylesheet.css"
     TITLE = "IT CRAFT QCLI Version 1.2"
 
-    async def action_scroll_up(self) -> None:
-        self.chat.scroll_to(0)
-
     async def action_quit_app(self) -> None:
-        # await self.action_quit()
         sys.exit()
 
     def compose(self) -> ComposeResult:
-        """Create child widgets for the app."""
-        yield Header(show_clock=True)
-        yield Footer()
         self.chat = Chat()
         self.group_list = Static()
-        self.group_list_1 = Static()  # classes="box2")
-        yield Container(self.chat, self.group_list, classes="box")
+        self.statusbar_grouplist = Static()
         self.chat.init()
         self.gocqlog = Static(classes="box2")
-        self.user = Static("User: <none> (<none>)")
-        self.status = Container(
-            self.user,
-            self.group_list_1,
+        self.user_status = Static("User: <none> (<none>)")
+        self.statusbar = Container(
+            self.user_status,
+            self.statusbar_grouplist,
             self.gocqlog,
             classes="box"
         )
-        yield self.status
-        # self.input = Input()
-        # yield Container(self.input, classes="box", id="two")#Static("Input", classes="box", id="two")
         self.input = Input(classes="box", id="two")
+        
+        yield Header(show_clock=True)
+        yield Footer()
+        yield Container(self.chat, self.group_list, classes="box")
+        yield self.statusbar
         yield self.input
 
     def set_group(self, group):
@@ -92,18 +85,15 @@ class QCli(App):
 
     def update_groups_list(self, groups) -> None:
         self.group_list.update(groups)
-        self.group_list_1.update(groups)
-
-    def action_toggle_dark(self) -> None:
-        """An action to toggle dark mode."""
-        self.dark = not self.dark
+        self.statusbar_grouplist.update(groups)
 
     async def on_input_submitted(self, event) -> None:
         # self.chat.edit(event.value)
         await self.send_func(event.value)
         self.input.value = ""
 
-    def action_reset_focus(self) -> None:
+    def action_reset_input(self) -> None:
+        self.input.value = ""
         self.input.reset_focus()
 
     def add_message(self, text) -> None:
@@ -111,11 +101,3 @@ class QCli(App):
 
     def set_send_func(self, func) -> None:
         self.send_func = func
-        #self.send_func("/get groups")
-
-    # def on_key(self, event: events.Key):
-    #    self.input.insert(event.char)
-
-
-#app = QCli()
-# app.run()

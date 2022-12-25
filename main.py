@@ -1,7 +1,7 @@
 import os
 import rich.markdown
 from aiocqhttp import CQHttp
-import parser
+import parser_1
 import asyncio
 from aiocqhttp import Event
 import rich.console
@@ -89,7 +89,7 @@ class qCli():
                 if event["group_id"] == self.selected_session:
                     self.new_messages[event["group_id"]] = 0
                     self.ui.add_message(
-                        f'[blue]\[{event["sender"]["card"] or event["sender"]["nickname"]} ({event["sender"]["user_id"]})]:[/]\n {await parser.parser(event["raw_message"], self.bot)}')
+                        f'[blue]\[{event["sender"]["card"] or event["sender"]["nickname"]} ({event["sender"]["user_id"]})]:[/]\n {await parser_1.parser(event["raw_message"], self.bot)}')
                 elif event["group_id"] in self.new_messages.keys():
                     self.new_messages[event["group_id"]] += 1
                 else:
@@ -175,7 +175,7 @@ class qCli():
                 group_id=self.selected_session
             )
             self.ui.add_message(
-                f'[blue]\[{self.self_nick} ({self.self_id})]:[/]\n {await parser.parser(message, self.bot)}')
+                f'[blue]\[{self.self_nick} ({self.self_id})]:[/]\n {await parser_1.parser(message, self.bot)}')
     # @bot.on_startup
 
     async def update_group_list(self):
@@ -210,14 +210,14 @@ class qCli():
 Mode: {mode}
 Session: {session_name} ({self.selected_session})"""
             # 渲染
-            self.ui.user.update(text)
+            self.ui.user_status.update(text)
             # 等待
             await asyncio.sleep(1)
 
     async def on_websocket_connection(self, event):
         self.console.rule("QCLI (By XiaoDeng3386)")
         self.ui.set_send_func(self.send_message)
-        parser.set_send_func(self.send_message)
+        parser_1.set_send_func(self.send_message)
         asyncio.create_task(self.ui.run_async())
         asyncio.create_task(self.update_group_list())
         asyncio.create_task(self.update_status())
