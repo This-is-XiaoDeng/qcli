@@ -33,7 +33,10 @@ class qCli():
 
     def display_cqhttp_logger(self):
         while True:
-            buffer = self.cqhttp_popen.stdout.readline().decode()
+            try:
+                buffer = self.cqhttp_popen.stdout.readline().decode()
+            except BaseException:
+                buffer = ""
             if buffer != "" and self.cqhttp_popen.poll() is not None:
                 break
             buffer = buffer[buffer.find(" [")+1:].replace("\n", "")
